@@ -6,6 +6,9 @@ const prevButton = document.getElementById("prev-button");
 const nextButton = document.getElementById("next-button");
 const shuffleButton = document.getElementById("shuffle-button");
 const repeatButton = document.getElementById("repeat-button");
+const repeatStatus = document.getElementById("repeat-status");
+const songNameElement = document.getElementById("song-name");
+const playSelectedButton = document.getElementById("play-selected-button");
 
 let currentTrackIndex = 0;
 let isShuffled = false;
@@ -14,7 +17,7 @@ let repeatMode = "all";
 playButtons.forEach((button) =>
   button.addEventListener("click", () => {
     currentTrackIndex = Array.from(playButtons).indexOf(button);
-    playTrack(button.getAttribute("data-src"));
+    songNameElement.textContent = getSongName(button.getAttribute("data-src"));
   })
 );
 
@@ -23,16 +26,26 @@ nextButton.addEventListener("click", () => playNextTrack());
 shuffleButton.addEventListener("click", () => toggleShuffle());
 repeatButton.addEventListener("click", () => toggleRepeatMode());
 
+playSelectedButton.addEventListener("click", () => playSelectedSong());
+
 music.addEventListener("ended", () => handleTrackEnded());
 
-const playTrack = (src) => {
-  music.src = src;
-  music.play();
-  // Show the album art for the currently playing song
-  albumArtImages.forEach((img, index) => {
-    img.style.display = index === currentTrackIndex ? "block" : "none";
-  });
+const playSelectedSong = () => {
+  // Play the song that corresponds to the current track index
+  const selectedButton = playButtons[currentTrackIndex];
+  if (selectedButton) {
+    playTrack(selectedButton.getAttribute("data-src"));
+  }
 };
+
+const playTrack = (src) => {
+    music.src = src;
+    music.play();
+    songNameElement.textContent = getSongName(src);
+    albumArtImages.forEach((img, index) => {
+      img.style.display = index === currentTrackIndex ? "block" : "none";
+    });
+  };
 
 const playPreviousTrack = () => {
   currentTrackIndex =
@@ -45,25 +58,28 @@ const playNextTrack = () => {
     currentTrackIndex = getRandomIndex();
   } else {
     currentTrackIndex = (currentTrackIndex + 1) % playButtons.length;
+    playTrack(playButtons[currentTrackIndex].getAttribute("data-src"));
   }
-  playTrack(playButtons[currentTrackIndex].getAttribute("data-src"));
 };
 
 const toggleShuffle = () => {
   isShuffled = !isShuffled;
-  shuffleButton.textContent = isShuffled ? "Shuffle (On)" : "Shuffle (Off)";
+  const shuffleIcon = document.querySelector(".fa-shuffle");
+  const shuffleStatus = document.getElementById("shuffle-status");
+  shuffleIcon.classList.toggle("active", isShuffled);
+  shuffleStatus.textContent = isShuffled ? "On" : "Off";
 };
 
 const toggleRepeatMode = () => {
   if (repeatMode === "all") {
     repeatMode = "one";
-    repeatButton.textContent = "Repeat (One)";
+    repeatStatus.textContent = "One";
   } else if (repeatMode === "one") {
     repeatMode = "none";
-    repeatButton.textContent = "Repeat (None)";
+    repeatStatus.textContent = "None";
   } else {
     repeatMode = "all";
-    repeatButton.textContent = "Repeat (All)";
+    repeatStatus.textContent = "All";
   }
 };
 
@@ -81,4 +97,10 @@ const getRandomIndex = () => {
     index = Math.floor(Math.random() * playButtons.length);
   } while (index === currentTrackIndex);
   return index;
+};
+
+const getSongName = (src) => {
+  const parts = src.split("/");
+  const filename = parts[parts.length - 1];
+  return filename.replace(".mp3", "");
 };
