@@ -10,43 +10,52 @@ const volumeLabel = document.getElementById("volume-label");
 let currentTrackIndex = 0;
 let isShuffled = false;
 
-playButtons.forEach((button) => [
-  button.addEventListener("click", () => {
-    currentTrackIndex = Array.from(playButtons).indexOf(button);
+playButtons.forEach((button, index) => {
+  button.addEventListener("click", function () {
+    currentTrackIndex = index;
     playTrack(button.getAttribute("data-src"));
-  }),
-]);
+  });
+});
 
-const playTrack = (src) => {
+prevButton.addEventListener("click", playPreviousTrack);
+nextButton.addEventListener("click", playNextTrack);
+shuffleButton.addEventListener("click", toggleShuffle);
+
+volumeControl.addEventListener("input", updateVolume);
+
+music.addEventListener("ended", function () {
+  playNextTrack();
+});
+
+function playTrack(src) {
   music.src = src;
   music.play();
-};
-prevButton.addEventListener("click", () => {
-  currentTrackIndex--;
-  if (currentTrackIndex < 0) {
-    currentTrackIndex = playButtons.length - 1;
+}
+
+function playPreviousTrack() {
+  currentTrackIndex =
+    (currentTrackIndex - 1 + playButtons.length) % playButtons.length;
+  playTrack(playButtons[currentTrackIndex].getAttribute("data-src"));
+}
+
+function playNextTrack() {
+  if (isShuffled) {
+    currentTrackIndex = getRandomIndex();
+  } else {
+    currentTrackIndex = (currentTrackIndex + 1) % playButtons.length;
   }
   playTrack(playButtons[currentTrackIndex].getAttribute("data-src"));
-});
-
-nextButton.addEventListener("click", () => {
-  currentTrackIndex++;
-  if (currentTrackIndex > playButtons.length - 1) {
-    currentTrackIndex = 0;
-  }
-  playTrack(playButtons[currentTrackIndex].getAttribute("data-src"));
-});
-
-volumeControl.addEventListener("input", () => {
-  music.volume = volumeControl.value;
-  volumeLabel.textContent = `Volume: ${Math.round(volume * 100)}%`;
-});
-
-shuffleButton.addEventListener("click", toggleShuffle);
+}
 
 function toggleShuffle() {
   isShuffled = !isShuffled;
   shuffleButton.textContent = isShuffled ? "Shuffle (On)" : "Shuffle (Off)";
+}
+
+function updateVolume() {
+  const volume = volumeControl.value;
+  music.volume = volume;
+  volumeLabel.textContent = `Volume: ${Math.round(volume * 100)}%`;
 }
 
 function getRandomIndex() {
