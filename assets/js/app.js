@@ -1,11 +1,10 @@
 const music = document.getElementById("music");
 const playlist = document.getElementById("playlist");
 const playButtons = document.querySelectorAll(".play-button");
+const albumArtImages = document.querySelectorAll(".album-art");
 const prevButton = document.getElementById("prev-button");
 const nextButton = document.getElementById("next-button");
 const shuffleButton = document.getElementById("shuffle-button");
-// const volumeControl = document.getElementById('volume-control');
-// const volumeLabel = document.getElementById('volume-label');
 const repeatButton = document.getElementById("repeat-button");
 
 let currentTrackIndex = 0;
@@ -24,13 +23,15 @@ nextButton.addEventListener("click", () => playNextTrack());
 shuffleButton.addEventListener("click", () => toggleShuffle());
 repeatButton.addEventListener("click", () => toggleRepeatMode());
 
-// volumeControl.addEventListener('input', () => updateVolume());
-
-music.addEventListener("ended", () => playNextTrack());
+music.addEventListener("ended", () => handleTrackEnded());
 
 const playTrack = (src) => {
   music.src = src;
   music.play();
+  // Show the album art for the currently playing song
+  albumArtImages.forEach((img, index) => {
+    img.style.display = index === currentTrackIndex ? "block" : "none";
+  });
 };
 
 const playPreviousTrack = () => {
@@ -53,20 +54,6 @@ const toggleShuffle = () => {
   shuffleButton.textContent = isShuffled ? "Shuffle (On)" : "Shuffle (Off)";
 };
 
-// const updateVolume = () => {
-//     const volume = volumeControl.value;
-//     music.volume = volume;
-//     volumeLabel.textContent = `Volume: ${Math.round(volume * 100)}%`;
-// };
-
-const getRandomIndex = () => {
-  let index;
-  do {
-    index = Math.floor(Math.random() * playButtons.length);
-  } while (index === currentTrackIndex);
-  return index;
-};
-
 const toggleRepeatMode = () => {
   if (repeatMode === "all") {
     repeatMode = "one";
@@ -86,4 +73,12 @@ const handleTrackEnded = () => {
   } else if (repeatMode === "all") {
     playNextTrack();
   }
+};
+
+const getRandomIndex = () => {
+  let index;
+  do {
+    index = Math.floor(Math.random() * playButtons.length);
+  } while (index === currentTrackIndex);
+  return index;
 };
